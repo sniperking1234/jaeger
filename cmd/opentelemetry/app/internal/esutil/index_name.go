@@ -16,7 +16,7 @@ package esutil
 
 import "time"
 
-const indexDateFormat = "2006-01-02" // date format for index e.g. 2020-01-20
+const indexDateFormat = "2006.01.02" // date format for index e.g. 2020-01-20
 
 // Alias is used to configure the kind of index alias
 type Alias string
