@@ -6,7 +6,7 @@ RUN apk add --update --no-cache ca-certificates make git && \
     git config --global http.proxy 'http://127.0.0.1:1080' && \
     git config --global https.proxy 'http://127.0.0.1:1080' && \
     export http_proxy=http://127.0.0.1:1080 && \
-    export https_proxy=https://127.0.0.1:1080 && \
+    export https_proxy=http://127.0.0.1:1080 && \
     go get github.com/go-delve/delve/cmd/dlv && \
     cd /go/src/github.com/go-delve/delve && \
     make install
