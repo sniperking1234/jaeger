@@ -5,8 +5,8 @@ ENV GOPATH /go
 RUN apk add --update --no-cache ca-certificates make git && \
     git config --global http.proxy 'http://127.0.0.1:1080' && \
     git config --global https.proxy 'http://127.0.0.1:1080' && \
-    go env -w GO111MODULE=on && \
-    go env -w GOPROXY=https://goproxy.cn,direct && \
+    export http_proxy=http://127.0.0.1:1080 && \
+    export https_proxy=https://127.0.0.1:1080 && \
     go get github.com/go-delve/delve/cmd/dlv && \
     cd /go/src/github.com/go-delve/delve && \
     make install
