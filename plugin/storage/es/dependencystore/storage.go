@@ -122,5 +122,5 @@ func getIndices(prefix string, ts time.Time, lookback time.Duration) []string {
 }
 
 func indexWithDate(indexNamePrefix string, date time.Time) string {
-	return indexNamePrefix + date.UTC().Format("2006-01-02")
+	return indexNamePrefix + date.UTC().Format("2006.01.02")
 }

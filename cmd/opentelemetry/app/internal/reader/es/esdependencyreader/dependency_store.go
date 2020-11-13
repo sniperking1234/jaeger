@@ -36,7 +36,7 @@ const (
 
 	timestampField = "timestamp"
 
-	indexDateFormat = "2006-01-02" // date format for index e.g. 2020-01-20
+	indexDateFormat = "2006.01.02" // date format for index e.g. 2020-01-20
 )
 
 // DependencyStore defines Elasticsearch dependency store.
