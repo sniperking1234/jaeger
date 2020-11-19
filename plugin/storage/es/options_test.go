@@ -35,6 +35,7 @@ func TestOptions(t *testing.T) {
 	assert.Equal(t, 72*time.Hour, primary.MaxSpanAge)
 	assert.False(t, primary.Sniffer)
 	assert.False(t, primary.SnifferTLSEnabled)
+	assert.Equal(t, "2006-01-02", primary.IndexDateLayout)
 
 	aux := opts.Get("archive")
 	assert.Equal(t, primary.Username, aux.Username)
@@ -55,10 +56,12 @@ func TestOptionsWithFlags(t *testing.T) {
 		"--es.max-span-age=48h",
 		"--es.num-shards=20",
 		"--es.num-replicas=10",
+		"--es.index-date-separator=.",
 		// a couple overrides
 		"--es.aux.server-urls=3.3.3.3, 4.4.4.4",
 		"--es.aux.max-span-age=24h",
 		"--es.aux.num-replicas=10",
+		"--es.aux.index-date-separator=.",
 		"--es.tls.enabled=true",
 		"--es.tls.skip-host-verify=true",
 		"--es.tags-as-fields.all=true",
@@ -81,6 +84,7 @@ func TestOptionsWithFlags(t *testing.T) {
 	assert.Equal(t, "!", primary.Tags.DotReplacement)
 	assert.Equal(t, "./file.txt", primary.Tags.File)
 	assert.Equal(t, "test,tags", primary.Tags.Include)
+	assert.Equal(t, "2006.01.02", primary.IndexDateLayout)
 
 	aux := opts.Get("es.aux")
 	assert.Equal(t, []string{"3.3.3.3", "4.4.4.4"}, aux.Servers)
@@ -94,6 +98,7 @@ func TestOptionsWithFlags(t *testing.T) {
 	assert.Equal(t, "!", aux.Tags.DotReplacement)
 	assert.Equal(t, "./file.txt", aux.Tags.File)
 	assert.Equal(t, "test,tags", aux.Tags.Include)
+	assert.Equal(t, "2006.01.02", aux.IndexDateLayout)
 }
 
 func TestMaxNumSpansUsage(t *testing.T) {
@@ -145,6 +150,25 @@ func TestMaxDocCount(t *testing.T) {
 
 			primary := opts.GetPrimary()
 			assert.Equal(t, tc.wantMaxDocCount, primary.MaxDocCount)
+		})
+	}
+}
+
+func TestDateLayout(t *testing.T) {
+	testCases := []struct {
+		name       string
+		separator  string
+		wantLayout string
+	}{
+		{"default", "", "2006-01-02"},
+		{"crossbar", "-", "2006-01-02"},
+		{"normal separator", ".", "2006.01.02"},
+		{"none separator", "none", "20060102"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			dateLayout := initDateLayout(tc.separator)
+			assert.Equal(t, dateLayout, tc.wantLayout)
 		})
 	}
 }
