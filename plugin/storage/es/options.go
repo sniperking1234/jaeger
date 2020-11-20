@@ -105,7 +105,6 @@ func NewOptions(primaryNamespace string, otherNamespaces ...string) *Options {
 				Version:              0,
 				Servers:              []string{defaultServerURL},
 				MaxDocCount:          defaultMaxDocCount,
-				IndexDateLayout:      defaultIndexDateLayout,
 			},
 			namespace: primaryNamespace,
 		},
@@ -216,7 +215,7 @@ func addFlags(flagSet *flag.FlagSet, nsConfig *namespaceConfig) {
 		"Optional prefix of Jaeger indices. For example \"production\" creates \"production-jaeger-*\".")
 	flagSet.String(
 		nsConfig.namespace+suffixIndexDateSeparator,
-		nsConfig.IndexDateLayout,
+		"",
 		"Optional prefix of Jaeger indices. For example \"production\" creates \"production-jaeger-*\".")
 	flagSet.Bool(
 		nsConfig.namespace+suffixTagsAsFieldsAll,
