@@ -347,5 +347,6 @@ func initDateLayout(separator string) string {
 	} else {
 		dateLayout = defaultIndexDateLayout
 	}
+	fmt.Printf("separator is %s, layout is %s", separator, dateLayout)
 	return dateLayout
 }

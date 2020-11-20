@@ -59,7 +59,7 @@ type Configuration struct {
 	BulkActions           int            `mapstructure:"-"`
 	BulkFlushInterval     time.Duration  `mapstructure:"-"`
 	IndexPrefix           string         `mapstructure:"index_prefix"`
-	IndexDateLayout       string         `mapstructure:"index_date_separator"`
+	IndexDateLayout       string         `mapstructure:"index_date_layout"`
 	Tags                  TagsAsFields   `mapstructure:"tags_as_fields"`
 	Enabled               bool           `mapstructure:"-"`
 	TLS                   tlscfg.Options `mapstructure:"tls"`
