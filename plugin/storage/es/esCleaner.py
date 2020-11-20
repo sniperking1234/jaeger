@@ -57,11 +57,7 @@ def filter_main_indices(ilo, prefix, separator):
     date_regex = "\d{4}-\d{2}-\d{2}"
     time_string = "%Y-%m-%d"
     if separator != "":
-        # Add escape string in regex
-        if separator == "\\":
-            date_regex = "\d{4}" + "\\\\" + "\d{2}" + "\\\\" + "\d{2}"
-            time_string= "%Y\\%m\\%d"
-        elif separator == "none":
+        if separator == "none":
             date_regex = "\d{4}\d{2}\d{2}"
             time_string = "%Y%m%d"
         else:
