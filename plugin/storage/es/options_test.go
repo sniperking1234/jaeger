@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/jaegertracing/jaeger/pkg/config"
 )
@@ -30,6 +31,7 @@ func TestOptions(t *testing.T) {
 	assert.Empty(t, primary.Username)
 	assert.Empty(t, primary.Password)
 	assert.NotEmpty(t, primary.Servers)
+	assert.Empty(t, primary.RemoteReadClusters)
 	assert.Equal(t, int64(5), primary.NumShards)
 	assert.Equal(t, int64(1), primary.NumReplicas)
 	assert.Equal(t, 72*time.Hour, primary.MaxSpanAge)
@@ -45,7 +47,7 @@ func TestOptions(t *testing.T) {
 func TestOptionsWithFlags(t *testing.T) {
 	opts := NewOptions("es", "es.aux")
 	v, command := config.Viperize(opts.AddFlags)
-	command.ParseFlags([]string{
+	err := command.ParseFlags([]string{
 		"--es.server-urls=1.1.1.1, 2.2.2.2",
 		"--es.username=hello",
 		"--es.password=world",
@@ -57,6 +59,7 @@ func TestOptionsWithFlags(t *testing.T) {
 		"--es.num-replicas=10",
 		"--es.index-date-separator=",
 		// a couple overrides
+		"--es.remote-read-clusters=cluster_one,cluster_two",
 		"--es.aux.server-urls=3.3.3.3, 4.4.4.4",
 		"--es.aux.max-span-age=24h",
 		"--es.aux.num-replicas=10",
@@ -67,13 +70,16 @@ func TestOptionsWithFlags(t *testing.T) {
 		"--es.tags-as-fields.include=test,tags",
 		"--es.tags-as-fields.config-file=./file.txt",
 		"--es.tags-as-fields.dot-replacement=!",
+		"--es.use-ilm=true",
 	})
+	require.NoError(t, err)
 	opts.InitFromViper(v)
 
 	primary := opts.GetPrimary()
 	assert.Equal(t, "hello", primary.Username)
 	assert.Equal(t, "/foo/bar", primary.TokenFilePath)
 	assert.Equal(t, []string{"1.1.1.1", "2.2.2.2"}, primary.Servers)
+	assert.Equal(t, []string{"cluster_one", "cluster_two"}, primary.RemoteReadClusters)
 	assert.Equal(t, 48*time.Hour, primary.MaxSpanAge)
 	assert.True(t, primary.Sniffer)
 	assert.True(t, primary.SnifferTLSEnabled)
@@ -84,20 +90,41 @@ func TestOptionsWithFlags(t *testing.T) {
 	assert.Equal(t, "./file.txt", primary.Tags.File)
 	assert.Equal(t, "test,tags", primary.Tags.Include)
 	assert.Equal(t, "20060102", primary.IndexDateLayout)
-
 	aux := opts.Get("es.aux")
 	assert.Equal(t, []string{"3.3.3.3", "4.4.4.4"}, aux.Servers)
 	assert.Equal(t, "hello", aux.Username)
 	assert.Equal(t, "world", aux.Password)
-	assert.Equal(t, int64(20), aux.NumShards)
+	assert.Equal(t, int64(5), aux.NumShards)
 	assert.Equal(t, int64(10), aux.NumReplicas)
 	assert.Equal(t, 24*time.Hour, aux.MaxSpanAge)
 	assert.True(t, aux.Sniffer)
 	assert.True(t, aux.Tags.AllAsFields)
-	assert.Equal(t, "!", aux.Tags.DotReplacement)
+	assert.Equal(t, "@", aux.Tags.DotReplacement)
 	assert.Equal(t, "./file.txt", aux.Tags.File)
 	assert.Equal(t, "test,tags", aux.Tags.Include)
 	assert.Equal(t, "2006.01.02", aux.IndexDateLayout)
+	assert.True(t, primary.UseILM)
+}
+
+func TestEmptyRemoteReadClusters(t *testing.T) {
+	opts := NewOptions("es", "es.aux")
+	v, command := config.Viperize(opts.AddFlags)
+	err := command.ParseFlags([]string{
+		"--es.remote-read-clusters=",
+	})
+	require.NoError(t, err)
+	opts.InitFromViper(v)
+
+	primary := opts.GetPrimary()
+	assert.Equal(t, []string{}, primary.RemoteReadClusters)
+}
+
+func TestMaxSpanAgeSetErrorInArchiveMode(t *testing.T) {
+	opts := NewOptions("es", archiveNamespace)
+	_, command := config.Viperize(opts.AddFlags)
+	flags := []string{"--es-archive.max-span-age=24h"}
+	err := command.ParseFlags(flags)
+	assert.EqualError(t, err, "unknown flag: --es-archive.max-span-age")
 }
 
 func TestMaxDocCount(t *testing.T) {
