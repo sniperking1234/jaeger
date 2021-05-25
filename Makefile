@@ -305,6 +305,10 @@ build-binaries-arm64:
 build-binaries-ppc64le:
 	GOOS=linux GOARCH=ppc64le $(MAKE) build-platform-binaries
 
+.PHONY: build-binaries-mips64
+build-binaries-mips64:
+	GOOS=linux GOARCH=mips64 $(MAKE) build-platform-binaries
+
 .PHONY: build-platform-binaries
 build-platform-binaries: build-agent \
 	build-agent-debug \
@@ -348,8 +352,6 @@ docker-images-jaeger-backend docker-images-jaeger-backend-debug: create-baseimg 
 			--build-arg base_image=$(BASE_IMAGE) \
 			--build-arg debug_image=$(DEBUG_IMAGE) \
 			--build-arg TARGETARCH=$(GOARCH) \
-			--build-arg HTTP_PROXY=http://10.202.52.178:1080 \
-			--build-arg HTTPS_PROXY=http://10.202.52.178:1080 \
 			cmd/$$component ; \
 		echo "Finished building $$component ==============" ; \
 	done
