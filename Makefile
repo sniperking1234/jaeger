@@ -309,6 +309,10 @@ build-binaries-ppc64le:
 build-binaries-mips64:
 	GOOS=linux GOARCH=mips64 $(MAKE) build-platform-binaries
 
+.PHONY: build-binaries-mips64le
+build-binaries-mips64le:
+	GOOS=linux GOARCH=mips64le $(MAKE) build-platform-binaries
+
 .PHONY: build-platform-binaries
 build-platform-binaries: build-agent \
 	build-agent-debug \
