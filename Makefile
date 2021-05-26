@@ -356,8 +356,6 @@ docker-images-jaeger-backend docker-images-jaeger-backend-debug: create-baseimg 
 			--build-arg base_image=$(BASE_IMAGE) \
 			--build-arg debug_image=$(DEBUG_IMAGE) \
 			--build-arg TARGETARCH=$(GOARCH) \
-			--build-arg HTTP_PROXY=http://10.202.52.178:1080 \
-            --build-arg HTTPS_PROXY=http://10.202.52.178:1080 \
 			cmd/$$component ; \
 		echo "Finished building $$component ==============" ; \
 	done
