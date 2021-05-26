@@ -18,4 +18,5 @@ create-baseimg:
 create-debugimg:
 	docker build -t $(DEBUG_IMAGE) \
 		--build-arg golang_image=$(GOLANG_IMAGE) \
+		--network=host \
 		docker/debug
