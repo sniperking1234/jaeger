@@ -1,7 +1,7 @@
 ARG base_image
 ARG debug_image
 
-FROM $base_image AS release
+FROM registry-jinan-lab.inspurcloud.cn/library/os/ubuntu-1604-mips64el:5.0.0 AS release
 ARG TARGETARCH=amd64
 COPY query-linux-$TARGETARCH /go/bin/query-linux
 EXPOSE 16686/tcp
