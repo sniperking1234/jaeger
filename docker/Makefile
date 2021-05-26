@@ -12,6 +12,7 @@ create-baseimg:
 	docker build -t $(BASE_IMAGE) \
 		--build-arg root_image=$(ROOT_IMAGE) \
 		--build-arg cert_image=$(CERT_IMAGE) \
+		--network=host \
 		docker/base
 
 create-debugimg:
