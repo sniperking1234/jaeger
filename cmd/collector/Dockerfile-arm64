@@ -1,0 +1,5 @@
+FROM registry-jinan-lab.inspurcloud.cn/library/os/ubuntu-1604-arm64:5.0.0 AS release
+ARG TARGETARCH=arm64
+COPY collector-linux-$TARGETARCH /go/bin/collector-linux
+EXPOSE 14250/tcp
+ENTRYPOINT ["/go/bin/collector-linux"]

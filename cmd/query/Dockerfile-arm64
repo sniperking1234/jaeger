@@ -1,0 +1,5 @@
+FROM registry-jinan-lab.inspurcloud.cn/library/os/ubuntu-1604-arm64:5.0.0 AS release
+ARG TARGETARCH=arm64
+COPY query-linux-$TARGETARCH /go/bin/query-linux
+EXPOSE 16686/tcp
+ENTRYPOINT ["/go/bin/query-linux"]
