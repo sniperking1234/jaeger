@@ -12,8 +12,11 @@ import (
 	_ "github.com/gogo/protobuf/types"
 	github_com_gogo_protobuf_types "github.com/gogo/protobuf/types"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	io "io"
 	math "math"
+	math_bits "math/bits"
 	time "time"
 )
 
@@ -27,7 +30,7 @@ var _ = time.Kitchen
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // MetricsQueryBaseRequest is the base request parameter accompanying a MetricsQueryService RPC call.
 type MetricsQueryBaseRequest struct {
@@ -75,7 +78,7 @@ func (m *MetricsQueryBaseRequest) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return xxx_messageInfo_MetricsQueryBaseRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -147,7 +150,7 @@ func (m *MetricsQueryBaseRequest) GetSpanKinds() []SpanKind {
 type GetLatenciesRequest struct {
 	BaseRequest *MetricsQueryBaseRequest `protobuf:"bytes,1,opt,name=baseRequest,proto3" json:"baseRequest,omitempty"`
 	// quantile is the quantile to compute from latency histogram metrics.
-	// Valid range: 0 - 1 (inclusive).
+	// Valid range: (0, 1]
 	//
 	// e.g. 0.99 will return the 99th percentile or P99 which is the worst latency
 	// observed from 99% of all spans for the given service (and operation).
@@ -173,7 +176,7 @@ func (m *GetLatenciesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return xxx_messageInfo_GetLatenciesRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -228,7 +231,7 @@ func (m *GetCallRatesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return xxx_messageInfo_GetCallRatesRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -276,7 +279,7 @@ func (m *GetErrorRatesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return xxx_messageInfo_GetErrorRatesRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -322,7 +325,7 @@ func (m *GetMinStepDurationRequest) XXX_Marshal(b []byte, deterministic bool) ([
 		return xxx_messageInfo_GetMinStepDurationRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -362,7 +365,7 @@ func (m *GetMinStepDurationResponse) XXX_Marshal(b []byte, deterministic bool) (
 		return xxx_messageInfo_GetMinStepDurationResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -389,10 +392,10 @@ func (m *GetMinStepDurationResponse) GetMinStep() time.Duration {
 }
 
 type GetMetricsResponse struct {
-	Metrics              []Metric `protobuf:"bytes,1,rep,name=metrics,proto3" json:"metrics"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Metrics              MetricFamily `protobuf:"bytes,1,opt,name=metrics,proto3" json:"metrics"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
 }
 
 func (m *GetMetricsResponse) Reset()         { *m = GetMetricsResponse{} }
@@ -409,7 +412,7 @@ func (m *GetMetricsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return xxx_messageInfo_GetMetricsResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
-		n, err := m.MarshalTo(b)
+		n, err := m.MarshalToSizedBuffer(b)
 		if err != nil {
 			return nil, err
 		}
@@ -428,11 +431,11 @@ func (m *GetMetricsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetMetricsResponse proto.InternalMessageInfo
 
-func (m *GetMetricsResponse) GetMetrics() []Metric {
+func (m *GetMetricsResponse) GetMetrics() MetricFamily {
 	if m != nil {
 		return m.Metrics
 	}
-	return nil
+	return MetricFamily{}
 }
 
 func init() {
@@ -448,44 +451,45 @@ func init() {
 func init() { proto.RegisterFile("metricsquery.proto", fileDescriptor_212ad953da609219) }
 
 var fileDescriptor_212ad953da609219 = []byte{
-	// 586 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x53, 0x4d, 0x6f, 0xd3, 0x40,
-	0x10, 0xc5, 0xa4, 0x34, 0xe9, 0xa6, 0x45, 0xd5, 0xb6, 0x08, 0xd7, 0x88, 0x24, 0x0a, 0x97, 0x50,
-	0x24, 0x07, 0x82, 0x04, 0xa7, 0x0a, 0x29, 0x80, 0x72, 0x80, 0x42, 0x71, 0x38, 0xc1, 0x21, 0xda,
-	0x24, 0x83, 0x59, 0xe2, 0xec, 0x3a, 0xbb, 0xeb, 0x4a, 0x39, 0xf3, 0x07, 0x38, 0x72, 0xe7, 0xc7,
-	0xd0, 0x23, 0xbf, 0x00, 0x50, 0x7e, 0x09, 0x5a, 0xaf, 0x9d, 0xe6, 0xa3, 0x0e, 0xcd, 0xa1, 0x37,
-	0xef, 0xdb, 0x79, 0x6f, 0xde, 0x78, 0xde, 0x22, 0x3c, 0x04, 0x25, 0x68, 0x4f, 0x8e, 0x22, 0x10,
-	0x63, 0x37, 0x14, 0x5c, 0x71, 0x7c, 0xeb, 0x0b, 0x01, 0x1f, 0x84, 0x4b, 0x42, 0xda, 0x39, 0x6d,
-	0xb8, 0x49, 0x85, 0xb3, 0xcb, 0x15, 0x04, 0xe6, 0x60, 0x0a, 0x1d, 0xac, 0x11, 0x19, 0x12, 0x36,
-	0xa0, 0xac, 0x9f, 0x60, 0xfb, 0x3e, 0xf7, 0x79, 0xfc, 0x59, 0xd7, 0x5f, 0x09, 0x5a, 0xf6, 0x39,
-	0xf7, 0x03, 0xa8, 0xc7, 0xa7, 0x6e, 0xf4, 0xa9, 0xae, 0xe8, 0x10, 0xa4, 0x22, 0xc3, 0x30, 0x29,
-	0x28, 0x2d, 0x16, 0xf4, 0x23, 0x41, 0x14, 0xe5, 0xcc, 0xdc, 0x57, 0x7f, 0xe4, 0xd0, 0xed, 0x63,
-	0x63, 0xe4, 0x9d, 0xb6, 0xda, 0x24, 0x12, 0x3c, 0x18, 0x45, 0x20, 0x15, 0xbe, 0x87, 0x76, 0x24,
-	0x88, 0x53, 0xda, 0x83, 0x0e, 0x23, 0x43, 0x90, 0xb6, 0x55, 0xc9, 0xd5, 0xb6, 0xbc, 0xed, 0x04,
-	0x7c, 0xa3, 0x31, 0x7c, 0x88, 0x76, 0x7d, 0xc1, 0xa3, 0xb0, 0x39, 0x7e, 0x1b, 0x82, 0x91, 0xb6,
-	0xaf, 0x57, 0xac, 0x5a, 0xc1, 0x5b, 0xc2, 0xf1, 0x33, 0x54, 0x00, 0xd6, 0xef, 0x68, 0x8f, 0x76,
-	0xae, 0x62, 0xd5, 0x8a, 0x0d, 0xc7, 0x35, 0xfe, 0xdc, 0xd4, 0x9f, 0xfb, 0x3e, 0x1d, 0xa0, 0x59,
-	0x38, 0xfb, 0x5d, 0xb6, 0xbe, 0xfd, 0x29, 0x5b, 0x5e, 0x1e, 0x58, 0x5f, 0xe3, 0x5a, 0x20, 0xe0,
-	0x7c, 0xd0, 0x25, 0xbd, 0x81, 0xbd, 0x11, 0x0b, 0x1c, 0x2c, 0x09, 0xbc, 0x48, 0x06, 0x34, 0xfc,
-	0xef, 0x9a, 0x3f, 0x25, 0xe1, 0xa7, 0x68, 0x43, 0x2a, 0x08, 0xed, 0x1b, 0x97, 0x27, 0xc7, 0x04,
-	0x7c, 0x84, 0xf2, 0x82, 0x28, 0x38, 0x01, 0x61, 0x6f, 0x5e, 0x9e, 0x9b, 0x72, 0xf0, 0x11, 0xda,
-	0xd2, 0xfb, 0x7c, 0x45, 0x59, 0x5f, 0xda, 0xf9, 0x4a, 0xae, 0x76, 0xb3, 0x51, 0x76, 0x2f, 0x8c,
-	0x83, 0xdb, 0x4e, 0xea, 0xbc, 0x73, 0x46, 0xf5, 0xab, 0x85, 0xf6, 0x5a, 0xa0, 0x5e, 0x13, 0x05,
-	0xac, 0x47, 0x41, 0xa6, 0x1b, 0x3a, 0x41, 0xc5, 0xee, 0xf9, 0xc2, 0x6c, 0x2b, 0x76, 0xe6, 0x66,
-	0x08, 0x67, 0xac, 0xd9, 0x9b, 0x95, 0xc0, 0x0e, 0x2a, 0x8c, 0x22, 0xc2, 0x14, 0x0d, 0x20, 0x5e,
-	0xa3, 0xe5, 0x4d, 0xcf, 0x55, 0x3f, 0x36, 0xf1, 0x9c, 0x04, 0x81, 0x47, 0xd4, 0x15, 0x9a, 0xa8,
-	0x7e, 0x46, 0xfb, 0x2d, 0x50, 0x2f, 0x85, 0xe0, 0xe2, 0x8a, 0x3b, 0xdd, 0x41, 0x07, 0x2d, 0x50,
-	0xc7, 0x94, 0xb5, 0x15, 0x84, 0xe9, 0x02, 0xd3, 0xcb, 0x8f, 0xc8, 0xb9, 0xe8, 0x52, 0x86, 0x9c,
-	0x49, 0xd0, 0x89, 0x18, 0x9a, 0xab, 0xc4, 0xc8, 0x7f, 0x12, 0x71, 0xcd, 0x24, 0x22, 0xe1, 0x54,
-	0xdb, 0x08, 0x6b, 0x71, 0x63, 0x72, 0x4e, 0xd4, 0x40, 0xf1, 0x63, 0x2b, 0x36, 0xee, 0xae, 0x9c,
-	0xae, 0xb9, 0xa1, 0x85, 0xbd, 0x94, 0xd3, 0xf8, 0x99, 0x43, 0x7b, 0xb3, 0x73, 0xb7, 0xcd, 0x4b,
-	0xc5, 0x63, 0xd3, 0x6c, 0x7e, 0x12, 0xfc, 0x30, 0x43, 0x3b, 0xf3, 0x8f, 0x38, 0x8f, 0xd6, 0x60,
-	0x24, 0x13, 0x01, 0xda, 0x9e, 0x4d, 0x2e, 0x3e, 0xcc, 0x96, 0x58, 0x8c, 0xb7, 0x73, 0x7f, 0x45,
-	0xbb, 0x85, 0x1f, 0x67, 0xda, 0x4c, 0xb3, 0xb9, 0xaa, 0xcd, 0x62, 0x80, 0xd7, 0x69, 0xe3, 0xa3,
-	0x9d, 0xb9, 0x64, 0xe2, 0x07, 0xd9, 0xdc, 0xa5, 0xfc, 0xae, 0xd1, 0xa8, 0xf9, 0xe4, 0x6c, 0x52,
-	0xb2, 0x7e, 0x4d, 0x4a, 0xd6, 0xdf, 0x49, 0xc9, 0x42, 0x65, 0xca, 0x13, 0xaa, 0x12, 0xa4, 0x47,
-	0x99, 0xbf, 0xa0, 0xf0, 0x21, 0x4d, 0x40, 0x77, 0x33, 0x0e, 0xdf, 0xe3, 0x7f, 0x01, 0x00, 0x00,
-	0xff, 0xff, 0x1e, 0x08, 0x10, 0x8d, 0x80, 0x06, 0x00, 0x00,
+	// 593 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x53, 0x4f, 0x6f, 0xd3, 0x3c,
+	0x18, 0x7f, 0xf3, 0x76, 0xac, 0x9d, 0xb7, 0x21, 0xf0, 0x86, 0xc8, 0x82, 0xd4, 0x56, 0xdd, 0xa5,
+	0x0c, 0x29, 0x83, 0x22, 0xc1, 0x69, 0x42, 0xea, 0x80, 0x1e, 0x60, 0x30, 0x52, 0x2e, 0xc0, 0xa1,
+	0x72, 0xdb, 0x87, 0x60, 0x9a, 0xd8, 0xa9, 0xed, 0x4c, 0xea, 0x99, 0x2f, 0xc0, 0x91, 0x3b, 0x1f,
+	0x86, 0x1d, 0xf9, 0x04, 0x80, 0xfa, 0x49, 0x50, 0x62, 0xa7, 0xeb, 0xda, 0xa5, 0xac, 0x87, 0xdd,
+	0xe2, 0xc7, 0xcf, 0xef, 0xcf, 0xe3, 0xe7, 0x17, 0x84, 0x43, 0x50, 0x82, 0xf6, 0xe4, 0x30, 0x06,
+	0x31, 0x72, 0x23, 0xc1, 0x15, 0xc7, 0xb7, 0x3e, 0x13, 0xf0, 0x41, 0xb8, 0x24, 0xa2, 0x9d, 0x93,
+	0x86, 0x6b, 0x3a, 0x9c, 0x9b, 0x3c, 0x02, 0x66, 0x0e, 0xba, 0xd3, 0xc1, 0x5c, 0x41, 0x20, 0x23,
+	0xc2, 0x06, 0x94, 0xf5, 0x4d, 0x6d, 0xdb, 0xe7, 0x3e, 0x4f, 0x3f, 0xf7, 0x93, 0x2f, 0x53, 0xad,
+	0xf8, 0x9c, 0xfb, 0x01, 0xec, 0xa7, 0xa7, 0x6e, 0xfc, 0x71, 0x5f, 0xd1, 0x10, 0xa4, 0x22, 0x61,
+	0x64, 0x1a, 0xca, 0xb3, 0x0d, 0xfd, 0x58, 0x10, 0x45, 0x39, 0xd3, 0xf7, 0xb5, 0xef, 0x05, 0x74,
+	0xfb, 0x48, 0x8b, 0xbf, 0x49, 0xbc, 0x36, 0x89, 0x04, 0x0f, 0x86, 0x31, 0x48, 0x85, 0x77, 0xd1,
+	0xa6, 0x04, 0x71, 0x42, 0x7b, 0xd0, 0x61, 0x24, 0x04, 0x69, 0x5b, 0xd5, 0x42, 0x7d, 0xcd, 0xdb,
+	0x30, 0xc5, 0x57, 0x49, 0x0d, 0xef, 0xa1, 0x1b, 0xbe, 0xe0, 0x71, 0xd4, 0x1c, 0xbd, 0x8e, 0x40,
+	0x53, 0xdb, 0xff, 0x57, 0xad, 0x7a, 0xc9, 0x9b, 0xab, 0xe3, 0x27, 0xa8, 0x04, 0xac, 0xdf, 0x49,
+	0x3c, 0xda, 0x85, 0xaa, 0x55, 0x5f, 0x6f, 0x38, 0xae, 0xf6, 0xe7, 0x66, 0xfe, 0xdc, 0xb7, 0xd9,
+	0x00, 0xcd, 0xd2, 0xe9, 0xaf, 0x8a, 0xf5, 0xf5, 0x77, 0xc5, 0xf2, 0x8a, 0xc0, 0xfa, 0x49, 0x3d,
+	0x21, 0x08, 0x38, 0x1f, 0x74, 0x49, 0x6f, 0x60, 0xaf, 0xa4, 0x04, 0x3b, 0x73, 0x04, 0x4f, 0xcd,
+	0x80, 0x1a, 0xff, 0x2d, 0xc1, 0x4f, 0x40, 0xf8, 0x31, 0x5a, 0x91, 0x0a, 0x22, 0xfb, 0xda, 0xe5,
+	0xc1, 0x29, 0x00, 0x1f, 0xa0, 0xa2, 0x20, 0x0a, 0x8e, 0x41, 0xd8, 0xab, 0x97, 0xc7, 0x66, 0x18,
+	0x7c, 0x80, 0xd6, 0x92, 0x7d, 0xbe, 0xa0, 0xac, 0x2f, 0xed, 0x62, 0xb5, 0x50, 0xbf, 0xde, 0xa8,
+	0xb8, 0x17, 0xe6, 0xc1, 0x6d, 0x9b, 0x3e, 0xef, 0x0c, 0x51, 0xfb, 0x62, 0xa1, 0xad, 0x16, 0xa8,
+	0x97, 0x44, 0x01, 0xeb, 0x51, 0x90, 0xd9, 0x86, 0x8e, 0xd1, 0x7a, 0xf7, 0x6c, 0x61, 0xb6, 0x95,
+	0x3a, 0x73, 0x73, 0x88, 0x73, 0xd6, 0xec, 0x4d, 0x53, 0x60, 0x07, 0x95, 0x86, 0x31, 0x61, 0x8a,
+	0x06, 0x90, 0xae, 0xd1, 0xf2, 0x26, 0xe7, 0x9a, 0x9f, 0x9a, 0x38, 0x24, 0x41, 0xe0, 0x11, 0x75,
+	0x85, 0x26, 0x6a, 0x9f, 0xd0, 0x76, 0x0b, 0xd4, 0x33, 0x21, 0xb8, 0xb8, 0x62, 0xa5, 0x3b, 0x68,
+	0xa7, 0x05, 0xea, 0x88, 0xb2, 0xb6, 0x82, 0x28, 0x5b, 0x60, 0x76, 0xf9, 0x01, 0x39, 0x17, 0x5d,
+	0xca, 0x88, 0x33, 0x09, 0x49, 0x22, 0x42, 0x7d, 0x65, 0x8c, 0xfc, 0x23, 0x11, 0xff, 0xe9, 0x44,
+	0x18, 0x4c, 0xed, 0x1d, 0xc2, 0x09, 0xb9, 0x36, 0x39, 0x21, 0x3d, 0x44, 0x45, 0xe3, 0xdf, 0x90,
+	0xee, 0x2e, 0x9c, 0xee, 0x39, 0x09, 0x69, 0x30, 0x6a, 0xae, 0x24, 0xf4, 0x5e, 0x86, 0x6c, 0xfc,
+	0x28, 0xa0, 0xad, 0xe9, 0xe9, 0xdb, 0xfa, 0x7f, 0xc5, 0x23, 0x2d, 0x79, 0x7e, 0x1e, 0x7c, 0x3f,
+	0x47, 0x21, 0xf7, 0x5d, 0x9c, 0x07, 0x4b, 0x20, 0xcc, 0x5c, 0x80, 0x36, 0xa6, 0xf3, 0x8b, 0xf7,
+	0xf2, 0x29, 0x66, 0x43, 0xee, 0xdc, 0x5d, 0x20, 0x37, 0xf3, 0x7c, 0x5a, 0x66, 0x92, 0xd0, 0x45,
+	0x32, 0xb3, 0x31, 0x5e, 0x46, 0xc6, 0x47, 0x9b, 0xe7, 0xf2, 0x89, 0xef, 0xe5, 0x63, 0xe7, 0x52,
+	0xbc, 0x84, 0x50, 0xf3, 0xd1, 0xe9, 0xb8, 0x6c, 0xfd, 0x1c, 0x97, 0xad, 0x3f, 0xe3, 0xb2, 0x85,
+	0x2a, 0x94, 0x1b, 0xa8, 0x12, 0xa4, 0x47, 0x99, 0x3f, 0xc3, 0xf0, 0x3e, 0x4b, 0x40, 0x77, 0x35,
+	0x8d, 0xe0, 0xc3, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x22, 0x5c, 0x1d, 0xae, 0x87, 0x06, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -572,6 +576,23 @@ type MetricsQueryServiceServer interface {
 	// GetErrorRates gets the error rate metrics for a given list of services grouped by service
 	// and optionally grouped by operation.
 	GetErrorRates(context.Context, *GetErrorRatesRequest) (*GetMetricsResponse, error)
+}
+
+// UnimplementedMetricsQueryServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedMetricsQueryServiceServer struct {
+}
+
+func (*UnimplementedMetricsQueryServiceServer) GetMinStepDuration(ctx context.Context, req *GetMinStepDurationRequest) (*GetMinStepDurationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMinStepDuration not implemented")
+}
+func (*UnimplementedMetricsQueryServiceServer) GetLatencies(ctx context.Context, req *GetLatenciesRequest) (*GetMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatencies not implemented")
+}
+func (*UnimplementedMetricsQueryServiceServer) GetCallRates(ctx context.Context, req *GetCallRatesRequest) (*GetMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCallRates not implemented")
+}
+func (*UnimplementedMetricsQueryServiceServer) GetErrorRates(ctx context.Context, req *GetErrorRatesRequest) (*GetMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetErrorRates not implemented")
 }
 
 func RegisterMetricsQueryServiceServer(s *grpc.Server, srv MetricsQueryServiceServer) {
@@ -678,7 +699,7 @@ var _MetricsQueryService_serviceDesc = grpc.ServiceDesc{
 func (m *MetricsQueryBaseRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -686,102 +707,103 @@ func (m *MetricsQueryBaseRequest) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *MetricsQueryBaseRequest) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MetricsQueryBaseRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.ServiceNames) > 0 {
-		for _, s := range m.ServiceNames {
-			dAtA[i] = 0xa
-			i++
-			l = len(s)
-			for l >= 1<<7 {
-				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
-				l >>= 7
-				i++
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.SpanKinds) > 0 {
+		dAtA2 := make([]byte, len(m.SpanKinds)*10)
+		var j1 int
+		for _, num := range m.SpanKinds {
+			for num >= 1<<7 {
+				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j1++
 			}
-			dAtA[i] = uint8(l)
-			i++
-			i += copy(dAtA[i:], s)
+			dAtA2[j1] = uint8(num)
+			j1++
 		}
+		i -= j1
+		copy(dAtA[i:], dAtA2[:j1])
+		i = encodeVarintMetricsquery(dAtA, i, uint64(j1))
+		i--
+		dAtA[i] = 0x3a
+	}
+	if m.RatePer != nil {
+		n3, err3 := github_com_gogo_protobuf_types.StdDurationMarshalTo(*m.RatePer, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdDuration(*m.RatePer):])
+		if err3 != nil {
+			return 0, err3
+		}
+		i -= n3
+		i = encodeVarintMetricsquery(dAtA, i, uint64(n3))
+		i--
+		dAtA[i] = 0x32
+	}
+	if m.Step != nil {
+		n4, err4 := github_com_gogo_protobuf_types.StdDurationMarshalTo(*m.Step, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdDuration(*m.Step):])
+		if err4 != nil {
+			return 0, err4
+		}
+		i -= n4
+		i = encodeVarintMetricsquery(dAtA, i, uint64(n4))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if m.Lookback != nil {
+		n5, err5 := github_com_gogo_protobuf_types.StdDurationMarshalTo(*m.Lookback, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdDuration(*m.Lookback):])
+		if err5 != nil {
+			return 0, err5
+		}
+		i -= n5
+		i = encodeVarintMetricsquery(dAtA, i, uint64(n5))
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.EndTime != nil {
+		n6, err6 := github_com_gogo_protobuf_types.StdTimeMarshalTo(*m.EndTime, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdTime(*m.EndTime):])
+		if err6 != nil {
+			return 0, err6
+		}
+		i -= n6
+		i = encodeVarintMetricsquery(dAtA, i, uint64(n6))
+		i--
+		dAtA[i] = 0x1a
 	}
 	if m.GroupByOperation {
-		dAtA[i] = 0x10
-		i++
+		i--
 		if m.GroupByOperation {
 			dAtA[i] = 1
 		} else {
 			dAtA[i] = 0
 		}
-		i++
+		i--
+		dAtA[i] = 0x10
 	}
-	if m.EndTime != nil {
-		dAtA[i] = 0x1a
-		i++
-		i = encodeVarintMetricsquery(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdTime(*m.EndTime)))
-		n1, err := github_com_gogo_protobuf_types.StdTimeMarshalTo(*m.EndTime, dAtA[i:])
-		if err != nil {
-			return 0, err
+	if len(m.ServiceNames) > 0 {
+		for iNdEx := len(m.ServiceNames) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ServiceNames[iNdEx])
+			copy(dAtA[i:], m.ServiceNames[iNdEx])
+			i = encodeVarintMetricsquery(dAtA, i, uint64(len(m.ServiceNames[iNdEx])))
+			i--
+			dAtA[i] = 0xa
 		}
-		i += n1
 	}
-	if m.Lookback != nil {
-		dAtA[i] = 0x22
-		i++
-		i = encodeVarintMetricsquery(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdDuration(*m.Lookback)))
-		n2, err := github_com_gogo_protobuf_types.StdDurationMarshalTo(*m.Lookback, dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n2
-	}
-	if m.Step != nil {
-		dAtA[i] = 0x2a
-		i++
-		i = encodeVarintMetricsquery(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdDuration(*m.Step)))
-		n3, err := github_com_gogo_protobuf_types.StdDurationMarshalTo(*m.Step, dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n3
-	}
-	if m.RatePer != nil {
-		dAtA[i] = 0x32
-		i++
-		i = encodeVarintMetricsquery(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdDuration(*m.RatePer)))
-		n4, err := github_com_gogo_protobuf_types.StdDurationMarshalTo(*m.RatePer, dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n4
-	}
-	if len(m.SpanKinds) > 0 {
-		dAtA6 := make([]byte, len(m.SpanKinds)*10)
-		var j5 int
-		for _, num := range m.SpanKinds {
-			for num >= 1<<7 {
-				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j5++
-			}
-			dAtA6[j5] = uint8(num)
-			j5++
-		}
-		dAtA[i] = 0x3a
-		i++
-		i = encodeVarintMetricsquery(dAtA, i, uint64(j5))
-		i += copy(dAtA[i:], dAtA6[:j5])
-	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
-	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *GetLatenciesRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -789,36 +811,44 @@ func (m *GetLatenciesRequest) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *GetLatenciesRequest) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetLatenciesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.BaseRequest != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintMetricsquery(dAtA, i, uint64(m.BaseRequest.Size()))
-		n7, err := m.BaseRequest.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n7
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
 	if m.Quantile != 0 {
-		dAtA[i] = 0x11
-		i++
+		i -= 8
 		encoding_binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.Quantile))))
-		i += 8
+		i--
+		dAtA[i] = 0x11
 	}
-	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+	if m.BaseRequest != nil {
+		{
+			size, err := m.BaseRequest.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetricsquery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *GetCallRatesRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -826,30 +856,38 @@ func (m *GetCallRatesRequest) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *GetCallRatesRequest) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetCallRatesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.BaseRequest != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintMetricsquery(dAtA, i, uint64(m.BaseRequest.Size()))
-		n8, err := m.BaseRequest.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n8
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if m.BaseRequest != nil {
+		{
+			size, err := m.BaseRequest.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetricsquery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *GetErrorRatesRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -857,30 +895,38 @@ func (m *GetErrorRatesRequest) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *GetErrorRatesRequest) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetErrorRatesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.BaseRequest != nil {
-		dAtA[i] = 0xa
-		i++
-		i = encodeVarintMetricsquery(dAtA, i, uint64(m.BaseRequest.Size()))
-		n9, err := m.BaseRequest.MarshalTo(dAtA[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n9
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	if m.BaseRequest != nil {
+		{
+			size, err := m.BaseRequest.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetricsquery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *GetMinStepDurationRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -888,20 +934,26 @@ func (m *GetMinStepDurationRequest) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *GetMinStepDurationRequest) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetMinStepDurationRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	return len(dAtA) - i, nil
 }
 
 func (m *GetMinStepDurationResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -909,28 +961,34 @@ func (m *GetMinStepDurationResponse) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *GetMinStepDurationResponse) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetMinStepDurationResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	dAtA[i] = 0xa
-	i++
-	i = encodeVarintMetricsquery(dAtA, i, uint64(github_com_gogo_protobuf_types.SizeOfStdDuration(m.MinStep)))
-	n10, err := github_com_gogo_protobuf_types.StdDurationMarshalTo(m.MinStep, dAtA[i:])
-	if err != nil {
-		return 0, err
-	}
-	i += n10
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	n10, err10 := github_com_gogo_protobuf_types.StdDurationMarshalTo(m.MinStep, dAtA[i-github_com_gogo_protobuf_types.SizeOfStdDuration(m.MinStep):])
+	if err10 != nil {
+		return 0, err10
+	}
+	i -= n10
+	i = encodeVarintMetricsquery(dAtA, i, uint64(n10))
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
 }
 
 func (m *GetMetricsResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
-	n, err := m.MarshalTo(dAtA)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
 	if err != nil {
 		return nil, err
 	}
@@ -938,36 +996,42 @@ func (m *GetMetricsResponse) Marshal() (dAtA []byte, err error) {
 }
 
 func (m *GetMetricsResponse) MarshalTo(dAtA []byte) (int, error) {
-	var i int
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GetMetricsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Metrics) > 0 {
-		for _, msg := range m.Metrics {
-			dAtA[i] = 0xa
-			i++
-			i = encodeVarintMetricsquery(dAtA, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(dAtA[i:])
-			if err != nil {
-				return 0, err
-			}
-			i += n
-		}
-	}
 	if m.XXX_unrecognized != nil {
-		i += copy(dAtA[i:], m.XXX_unrecognized)
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	return i, nil
+	{
+		size, err := m.Metrics.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintMetricsquery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
 }
 
 func encodeVarintMetricsquery(dAtA []byte, offset int, v uint64) int {
+	offset -= sovMetricsquery(v)
+	base := offset
 	for v >= 1<<7 {
 		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
 	dAtA[offset] = uint8(v)
-	return offset + 1
+	return base
 }
 func (m *MetricsQueryBaseRequest) Size() (n int) {
 	if m == nil {
@@ -1096,12 +1160,8 @@ func (m *GetMetricsResponse) Size() (n int) {
 	}
 	var l int
 	_ = l
-	if len(m.Metrics) > 0 {
-		for _, e := range m.Metrics {
-			l = e.Size()
-			n += 1 + l + sovMetricsquery(uint64(l))
-		}
-	}
+	l = m.Metrics.Size()
+	n += 1 + l + sovMetricsquery(uint64(l))
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
@@ -1109,14 +1169,7 @@ func (m *GetMetricsResponse) Size() (n int) {
 }
 
 func sovMetricsquery(x uint64) (n int) {
-	for {
-		n++
-		x >>= 7
-		if x == 0 {
-			break
-		}
-	}
-	return n
+	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozMetricsquery(x uint64) (n int) {
 	return sovMetricsquery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
@@ -1421,10 +1474,7 @@ func (m *MetricsQueryBaseRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMetricsquery
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsquery
 			}
 			if (iNdEx + skippy) > l {
@@ -1522,10 +1572,7 @@ func (m *GetLatenciesRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMetricsquery
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsquery
 			}
 			if (iNdEx + skippy) > l {
@@ -1612,10 +1659,7 @@ func (m *GetCallRatesRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMetricsquery
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsquery
 			}
 			if (iNdEx + skippy) > l {
@@ -1702,10 +1746,7 @@ func (m *GetErrorRatesRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMetricsquery
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsquery
 			}
 			if (iNdEx + skippy) > l {
@@ -1756,10 +1797,7 @@ func (m *GetMinStepDurationRequest) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMetricsquery
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsquery
 			}
 			if (iNdEx + skippy) > l {
@@ -1843,10 +1881,7 @@ func (m *GetMinStepDurationResponse) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMetricsquery
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsquery
 			}
 			if (iNdEx + skippy) > l {
@@ -1920,8 +1955,7 @@ func (m *GetMetricsResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Metrics = append(m.Metrics, Metric{})
-			if err := m.Metrics[len(m.Metrics)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Metrics.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1931,10 +1965,7 @@ func (m *GetMetricsResponse) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthMetricsquery
-			}
-			if (iNdEx + skippy) < 0 {
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
 				return ErrInvalidLengthMetricsquery
 			}
 			if (iNdEx + skippy) > l {
@@ -1953,6 +1984,7 @@ func (m *GetMetricsResponse) Unmarshal(dAtA []byte) error {
 func skipMetricsquery(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
+	depth := 0
 	for iNdEx < l {
 		var wire uint64
 		for shift := uint(0); ; shift += 7 {
@@ -1984,10 +2016,8 @@ func skipMetricsquery(dAtA []byte) (n int, err error) {
 					break
 				}
 			}
-			return iNdEx, nil
 		case 1:
 			iNdEx += 8
-			return iNdEx, nil
 		case 2:
 			var length int
 			for shift := uint(0); ; shift += 7 {
@@ -2008,55 +2038,30 @@ func skipMetricsquery(dAtA []byte) (n int, err error) {
 				return 0, ErrInvalidLengthMetricsquery
 			}
 			iNdEx += length
-			if iNdEx < 0 {
-				return 0, ErrInvalidLengthMetricsquery
-			}
-			return iNdEx, nil
 		case 3:
-			for {
-				var innerWire uint64
-				var start int = iNdEx
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return 0, ErrIntOverflowMetricsquery
-					}
-					if iNdEx >= l {
-						return 0, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					innerWire |= (uint64(b) & 0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				innerWireType := int(innerWire & 0x7)
-				if innerWireType == 4 {
-					break
-				}
-				next, err := skipMetricsquery(dAtA[start:])
-				if err != nil {
-					return 0, err
-				}
-				iNdEx = start + next
-				if iNdEx < 0 {
-					return 0, ErrInvalidLengthMetricsquery
-				}
-			}
-			return iNdEx, nil
+			depth++
 		case 4:
-			return iNdEx, nil
+			if depth == 0 {
+				return 0, ErrUnexpectedEndOfGroupMetricsquery
+			}
+			depth--
 		case 5:
 			iNdEx += 4
-			return iNdEx, nil
 		default:
 			return 0, fmt.Errorf("proto: illegal wireType %d", wireType)
 		}
+		if iNdEx < 0 {
+			return 0, ErrInvalidLengthMetricsquery
+		}
+		if depth == 0 {
+			return iNdEx, nil
+		}
 	}
-	panic("unreachable")
+	return 0, io.ErrUnexpectedEOF
 }
 
 var (
-	ErrInvalidLengthMetricsquery = fmt.Errorf("proto: negative length found during unmarshaling")
-	ErrIntOverflowMetricsquery   = fmt.Errorf("proto: integer overflow")
+	ErrInvalidLengthMetricsquery        = fmt.Errorf("proto: negative length found during unmarshaling")
+	ErrIntOverflowMetricsquery          = fmt.Errorf("proto: integer overflow")
+	ErrUnexpectedEndOfGroupMetricsquery = fmt.Errorf("proto: unexpected end of group")
 )
